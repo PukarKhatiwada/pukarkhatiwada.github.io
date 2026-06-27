@@ -1,371 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
- <link rel="icon" type="image/png" href="pukar.png">
-<title>Pukar Khatiwada</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pukar Khatiwada</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg:       #f2f2f2;
-    --surface:  #ffffff;
-    --border:   #e0e0e0;
-    --line:     #cccccc;
-    --t1:       #111111;
-    --t2:       #555555;
-    --t3:       #999999;
-    --active:   #111111;
-    --pill-bg:  #e8e8e8;
-    --r:        14px;
-  }
+    :root {
+      --forest:  #1a2e1a;
+      --slate:   #3d4a3d;
+      --mist:    #e8ede4;
+      --gold:    #c9a84c;
+      --offwhite:#f5f7f2;
+      --text:    #2c372c;
+    }
 
-  html, body {
-    height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    background: var(--bg);
-    color: var(--t1);
-    -webkit-font-smoothing: antialiased;
-  }
+    html { scroll-behavior: smooth; }
 
-  /* ── SHELL ── */
-  .shell {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 0 16px;
-  }
+    body {
+      background: var(--offwhite);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
 
-  /* ── TOP BAR ── */
-  .topbar {
-    padding: 32px 0 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 24px;
-  }
-  .avatar {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--pill-bg);
-    border: 1px solid var(--line);
-    overflow: hidden;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    color: var(--t3);
-    cursor: pointer;
-    position: relative;
-  }
-  .avatar img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
-  }
-  .avatar-hint {
-    position: absolute; inset: 0; border-radius: 50%;
-    background: rgba(0,0,0,0.45);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 9px; color: #fff; text-align: center;
-    opacity: 0; transition: opacity .18s;
-    padding: 4px; font-weight: 500; pointer-events: none;
-  }
-  .avatar:hover .avatar-hint { opacity: 1; }
-  .topbar-info {}
-  .topbar-name { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
-  .topbar-role { font-size: 12px; color: var(--t3); margin-top: 2px; font-weight: 400; }
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.4rem 4rem;
+      mix-blend-mode: normal;
+      background: rgba(245,247,242,0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(26,46,26,0.08);
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--slate);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--gold); }
 
-  /* ── NAV TABS ── */
-  .nav {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 28px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 4px;
-  }
-  .nav-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--t3);
-    padding: 8px 4px;
-    border-radius: 9px;
-    transition: color .15s, background .15s;
-    white-space: nowrap;
-  }
-  .nav-btn:hover { color: var(--t2); background: var(--pill-bg); }
-  .nav-btn.active {
-    color: var(--active);
-    background: var(--bg);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      background: var(--forest);
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 4rem 5rem;
+      position: relative;
+      overflow: hidden;
+    }
 
-  /* ── PANELS ── */
-  .panel { display: none; animation: fadein .22s ease; }
-  .panel.visible { display: block; }
-  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    /* Tea hills silhouette */
+    .hero-hills {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 200px; pointer-events: none;
+    }
+    .hero-hills svg { width: 100%; height: 100%; }
 
-  /* ── CARDS ── */
-  .cards { display: grid; gap: 12px; }
-  .cards-2 { grid-template-columns: 1fr 1fr; }
-  .cards-3 { grid-template-columns: repeat(3, 1fr); }
+    /* Floating mist dots */
+    .mist-dot {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(232,237,228,0.06);
+      animation: drift 8s ease-in-out infinite;
+    }
+    .mist-dot:nth-child(1) { width:320px;height:320px; top:8%; left:60%; animation-delay:0s; }
+    .mist-dot:nth-child(2) { width:180px;height:180px; top:40%; left:75%; animation-delay:3s; }
+    .mist-dot:nth-child(3) { width:240px;height:240px; top:20%; left:45%; animation-delay:5s; }
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 20px 18px;
-    transition: box-shadow .18s, border-color .18s;
-    cursor: default;
-  }
-  .card:hover {
-    box-shadow: 0 3px 14px rgba(0,0,0,0.07);
-    border-color: var(--line);
-  }
-  .card-icon { font-size: 24px; margin-bottom: 10px; display: block; }
-  .card-title { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 5px; }
-  .card-desc { font-size: 12.5px; color: var(--t2); line-height: 1.55; }
+    @keyframes drift {
+      0%,100% { transform: translateY(0) scale(1); opacity: 0.6; }
+      50%      { transform: translateY(-20px) scale(1.04); opacity: 1; }
+    }
 
-  /* hero card */
-  .card-hero {
-    background: var(--t1);
-    color: #fff;
-    border-color: var(--t1);
-  }
-  .card-hero .card-title { color: #fff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-  .card-hero .card-desc { color: #aaaaaa; font-size: 13px; margin-top: 6px; }
+    .hero-eyebrow {
+      font-size: 0.75rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.4rem;
+      position: relative; z-index: 2;
+    }
+    .hero-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.5rem, 9vw, 8rem);
+      font-weight: 700;
+      line-height: 0.95;
+      color: var(--mist);
+      letter-spacing: -0.02em;
+      position: relative; z-index: 2;
+      max-width: 800px;
+    }
+    .hero-tagline {
+      margin-top: 2.2rem;
+      font-size: 1.05rem;
+      color: rgba(232,237,228,0.65);
+      max-width: 420px;
+      position: relative; z-index: 2;
+    }
+    .hero-scroll {
+      position: absolute; bottom: 2.2rem; right: 4rem;
+      font-size: 0.7rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: rgba(232,237,228,0.35);
+      writing-mode: vertical-rl; z-index: 2;
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .hero-scroll::before {
+      content: ''; display: block;
+      width: 1px; height: 48px;
+      background: var(--gold); opacity: 0.5;
+    }
 
-  /* wide card */
-  .card-wide { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; }
-  .card-wide .card-icon { font-size: 36px; margin: 0; flex-shrink: 0; }
+    /* ── TEA-ROW DIVIDER ── */
+    .tea-divider {
+      display: flex; align-items: center; gap: 1.2rem;
+      padding: 0 4rem; margin: 3.5rem 0 0;
+      opacity: 0.5;
+    }
+    .tea-divider::before, .tea-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--slate), transparent);
+    }
+    .tea-leaf { font-size: 0.85rem; color: var(--slate); letter-spacing: 0.15em; }
 
-  /* tag card */
-  .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
-  .tag {
-    font-size: 11.5px; font-weight: 500; color: var(--t2);
-    background: var(--pill-bg); border: 1px solid var(--border);
-    border-radius: 980px; padding: 4px 11px;
-  }
+    /* ── SECTIONS ── */
+    section { padding: 7rem 4rem; }
 
-  /* instrument pills */
-  .inst-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-  .inst {
-    display: flex; align-items: center; gap: 7px;
-    background: var(--pill-bg); border: 1px solid var(--border);
-    border-radius: 10px; padding: 7px 14px;
-    font-size: 13px; font-weight: 500; color: var(--t1);
-  }
-  .inst span { font-size: 18px; }
+    .section-label {
+      font-size: 0.7rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 0.8rem;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 700; line-height: 1.15;
+      color: var(--forest); margin-bottom: 1.5rem;
+    }
 
-  /* contact chips */
-  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
-  .chip {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 11px 16px;
-    font-size: 13px; font-weight: 500; color: var(--t1);
-    text-decoration: none;
-    transition: background .15s, border-color .15s;
-  }
-  .chip:hover { background: var(--pill-bg); border-color: var(--line); }
-  .chip-icon { font-size: 15px; }
+    /* ── ABOUT ── */
+    .about { background: var(--offwhite); }
+    .about-grid {
+      grid-template-columns: 1fr 1.4fr;
+      gap: 6rem; align-items: center; margin-top: 3rem;
+    }
+    .about-body p { margin-bottom: 1.3rem; color: var(--slate); font-size: 1.02rem; }
+    .about-location {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.8rem; letter-spacing: 0.1em;
+      color: var(--gold); text-transform: uppercase;
+      margin-top: 0.5rem;
+      text-decoration: none;
+    }
 
-  /* ── FOOTER ── */
-  footer {
-    margin-top: auto;
-    padding: 28px 0 20px;
-    border-top: 1px solid var(--border);
-    text-align: center;
-    font-size: 11.5px;
-    color: var(--t3);
-  }
+    /* ── SKILLS ── */
+    .skills { background: var(--mist); }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.2rem; margin-top: 3rem;
+    }
+    .skill-card {
+      background: var(--offwhite);
+      border: 1px solid rgba(26,46,26,0.1);
+      padding: 1.6rem;
+      border-radius: 2px;
+      transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+    }
+    .skill-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(26,46,26,0.1);
+      border-color: var(--gold);
+    }
+    .skill-name {
+      font-size: 0.95rem; font-weight: 500;
+      color: var(--forest); margin-bottom: 0.3rem;
+    }
+    .skill-note { font-size: 0.78rem; color: var(--slate); }
+    /* ── CONTACT ── */
+    .contact {
+      background: var(--forest);
+      text-align: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 60vh;
+    }
+    .contact .section-title { color: var(--mist); }
+    .contact p { color: rgba(232,237,228,0.6); max-width: 420px; margin: 0 auto 2.5rem; }
+    .contact-links { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+    .contact-btn {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      padding: 0.9rem 2rem;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.8rem; letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-radius: 5px;
+      transition: background 0.22s, color 0.22s;
+    }
+    .contact-btn:hover { background: var(--gold); color: var(--forest); }
+    /* ── FOOTER ── */
+    footer {
+      background: #111c11;
+      padding: 2rem 4rem;
+      display: flex; justify-content: space-between; align-items: center;
+      color: rgba(232,237,228,0.25); font-size: 0.75rem;
+    }
+    footer span { letter-spacing: 0.06em; }
 
-  /* ── MOBILE ── */
-  @media (max-width: 480px) {
-    .cards-2 { grid-template-columns: 1fr; }
-    .cards-3 { grid-template-columns: 1fr 1fr; }
-    .topbar-name { font-size: 16px; }
-    .nav-btn { font-size: 12px; padding: 7px 2px; }
-    .card-hero .card-title { font-size: 18px; }
-  }
-  @media (max-width: 340px) {
-    .cards-3 { grid-template-columns: 1fr; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .panel { animation: none; }
-  }
+    /* ── SCROLL REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
 
-</style>
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { gap: 1.5rem; }
+      section { padding: 5rem 1.5rem; }
+      .hero { padding: 0 1.5rem 4rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .about-portrait { max-height: 320px; }
+      .tea-divider { padding: 0 1.5rem; }
+      footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+      .hero-scroll { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mist-dot { animation: none; }
+      .reveal { transition: none; }
+    }
+  </style>
 </head>
 <body>
-<div class="shell">
 
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <div class="avatar">
-      <span><img src="pukar.jpg" alt="P K"></span>
-      <span class="avatar-hint">
-        <image></image>
-      </span>
-    </div>
-    <div class="topbar-info">
-      <div class="topbar-name">Pukar Khatiwada</div>
-      <div class="topbar-role">Web Designer · Geek · Musician — Ilam, Nepal</div>
+<!-- NAV -->
+<nav>
+  <ul class="nav-links">
+    <li><a href="#" data-target="about">About</a></li>
+    <li><a href="#" data-target="skills">Skills</a></li>
+    <li><a href="#" data-target="contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="mist-dot"></div>
+  <div class="mist-dot"></div>
+  <div class="mist-dot"></div>
+
+  <p class="hero-eyebrow">Frontend Developer &nbsp;·&nbsp; Ilam, Nepal</p>
+  <h1 class="hero-name">
+    Pukar Khatiwada<br>
+  </h1>
+  <p class="hero-tagline">
+    I build clean, thoughtful interfaces where design meets code — inspired by the quiet precision of the mountains I call home.
+  </p>
+  
+  <div class="hero-scroll">Scroll</div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="reveal">
+    <p class="section-label">Who I am</p>
+    <h2 class="section-title">A developer rooted<br>in craft &amp; place.</h2>
+  </div>
+  <div class="about-grid">
+    <div class="about-body reveal">
+      <p>
+        Hello — I'm a frontend developer from Ilam, a small town in the eastern hills of Nepal, known for its rolling tea gardens and misty mornings. That sense of quiet attention to detail finds its way into every interface I build.
+      </p>
+      <p>
+        I specialise in HTML &amp; CSS — the raw materials of the web — with a firm belief that great UI starts with semantic structure and thoughtful styling before any framework is reached for.
+      </p>
+      <p>
+        I care about accessible, performant experiences that feel natural on any screen. Whether it's a pixel-perfect landing page or a complex layout system, I approach it with patience and precision.
+      </p>
+      <a href="www.youtube.com" class="about-location">
+         Ilam, Koshi Province, Nepal
+      </a>
     </div>
   </div>
+</section>
 
-  <!-- NAV -->
-  <nav class="nav" role="tablist">
-    <button class="nav-btn active" data-tab="home"   role="tab">Home</button>
-    <button class="nav-btn"        data-tab="work"   role="tab">Work</button>
-    <button class="nav-btn"        data-tab="skills" role="tab">Skills</button>
-    <button class="nav-btn"        data-tab="music"  role="tab">Music</button>
-    <button class="nav-btn"        data-tab="contact"role="tab">Contact</button>
-  </nav>
-
-  <!-- ── HOME ── -->
-  <div class="panel visible" id="tab-home">
-    <div class="cards">
-      <div class="card card-hero">
-        <div class="card-title">Designer who codes.<br>Geek who plays guitar.</div>
-        <div class="card-desc">Clean websites, sharp content, and a harmonica in the drawer.</div>
-      </div>
-      <div class="cards cards-2">
-        <div class="card">
-          <span class="card-icon">🖥️</span>
-          <div class="card-title">Web Design</div>
-          <div class="card-desc">Minimal, functional, built right.</div>
-        </div>
-        <div class="card">
-          <span class="card-icon">✏️</span>
-          <div class="card-title">Content</div>
-          <div class="card-desc">Sports copy, editorial, captions.</div>
-        </div>
-        <div class="card">
-          <span class="card-icon">⚙️</span>
-          <div class="card-title">Geek</div>
-          <div class="card-desc">Code, tools, and late-night rabbit holes.</div>
-        </div>
-        <div class="card">
-          <span class="card-icon">🎸</span>
-          <div class="card-title">Musician</div>
-          <div class="card-desc">Guitar &amp; harmonica. No stage needed.</div>
-        </div>
-      </div>
+<!-- SKILLS -->
+<section class="skills" id="skills">
+  <div class="reveal">
+    <p class="section-label">What I do</p>
+    <h2 class="section-title">Tools &amp; craft.</h2>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-card reveal">
+      <div class="skill-name">HTML5</div>
+      <div class="skill-note">Semantic markup, accessibility, structured content</div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-name">CSS3</div>
+      <div class="skill-note">Layouts, animations, custom properties, responsive design</div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-name">JavaScript</div>
+      <div class="skill-note">Interactivity, DOM, ES6+, async patterns</div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-name">Flexbox &amp; Grid</div>
+      <div class="skill-note">Precise, fluid layout systems without hacks</div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-name">Responsive Design</div>
+      <div class="skill-note">Mobile-first, every breakpoint considered</div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-name">Accessibility</div>
+      <div class="skill-note">WCAG guidelines, keyboard nav, screen readers</div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-name">Performance</div>
+      <div class="skill-note">Optimised assets, Core Web Vitals, lazy loading</div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-name">Git &amp; Tooling</div>
+      <div class="skill-note">Version control, build tools, modern workflows</div>
     </div>
   </div>
+</section>
 
-  <!-- ── WORK ── -->
-  <div class="panel" id="tab-work">
-    <div class="cards">
-      <a href="https://youtu.be/dQw4w9WgXcQ?si=9QBJSN0I2DKEyhht" style="text-decoration:none;">
-      <div class="card card-wide">
-        <span class="card-icon">🌾</span>
-        <div>
-          <div class="card-title">Nepal Krishi Tatha Pasupanchi Firm</div>
-          <div class="card-desc">Full website for a pineapple farm concept with Nepal-focused aesthetic.</div>
-        </div>
-      </div>
-   </a>
-    </div>
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <p class="section-label reveal">Get in touch</p>
+  <h2 class="section-title reveal">Let's build something.</h2>
+  <p class="reveal">Whether you have a project in mind or just want to talk craft — my inbox is always open.</p>
+  <div class="contact-links reveal">
+    <a href="mailto:khatiwadapukar@gmail.com" class="contact-btn">Email</a>
+    <a href="https://github.com/pukarkhatiwada" target="_blank" rel="noopener" class="contact-btn">GitHub</a>
   </div>
+</section>
 
-  <!-- ── SKILLS ── -->
-  <div class="panel" id="tab-skills">
-    <div class="cards">
-      <div class="card">
-        <div class="card-title">Design</div>
-        <div class="tags">
-          <span class="tag">HTML</span>
-          <span class="tag">CSS</span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Code</div>
-        <div class="tags">
-          <span class="tag">JavaScript</span>
-          <span class="tag">Git</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── MUSIC ── -->
-  <div class="panel" id="tab-music">
-    <div class="cards">
-      <div class="card card-hero">
-        <div class="card-title">Music.</div>
-        <div class="card-desc">When the screen closes, the strings come out.</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Instruments</div>
-        <div class="inst-row">
-          <div class="inst"><span>🎸</span> Guitar</div>
-          <div class="inst"><span>🎶</span> Harmonica</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-desc">Playing for the joy of it — no setlist, no stage. Just sound and quiet evenings in Ilam.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── CONTACT ── -->
-  <div class="panel" id="tab-contact">
-    <div class="cards">
-      <div class="card">
-        <div class="card-title">Say hello.</div>
-        <div class="card-desc" style="margin-bottom:16px;">Open to design work, writing projects, and interesting conversations.</div>
-        <div class="chips">
-          <a href="mailto:khatiwadapukar@gmail.com" class="chip"><span class="chip-icon">
-            <svg xmlns="http://www.w3.org/2000/svg"
-     width="24"
-     height="24"
-     viewBox="0 0 24 24"
-     fill="none"
-     stroke="black"
-     stroke-width="1"
-     stroke-linecap="round"
-     stroke-linejoin="round">
-  <rect x="3" y="5" width="18" height="14" rx="2" ry="2"/>
-  <path d="M3 7l9 6 9-6"/>
-</svg>
-          </span></a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <footer>© 2026 Pukar Khatiwada · Ilam, Nepal</footer>
-</div>
-
+<!-- FOOTER -->
+<footer>
+  <span>© <span id="year"></span> — Pukar Khatiwada &nbsp;·&nbsp; Ilam, Nepal </span>
+</footer>
 <script>
-  const btns   = document.querySelectorAll('.nav-btn');
-  const panels = document.querySelectorAll('.panel');
-
-  btns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const target = btn.dataset.tab;
-
-      btns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      panels.forEach(p => {
-        p.classList.remove('visible');
-        if (p.id === 'tab-' + target) p.classList.add('visible');
-      });
+  // Smooth scroll via JS (no hash IDs in href)
+  document.querySelectorAll('.nav-links a[data-target]').forEach(link => {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.getElementById(this.dataset.target);
+      if (!target) return;
+      const navHeight = document.querySelector('nav').offsetHeight;
+      const top = target.getBoundingClientRect().top + window.scrollY - navHeight;
+      window.scrollTo({ top, behavior: 'smooth' });
     });
   });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver(
+    (entries) => entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    }),
+    { threshold: 0.12 }
+  );
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  document.getElementById("year").textContent = new Date().getFullYear();
 </script>
 </body>
 </html>
