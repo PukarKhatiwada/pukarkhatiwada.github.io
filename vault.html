@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Personal Budget Ledger</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0d10;
+    --surface: #15181b;
+    --surface-alt: #1c2024;
+    --line: #2a2e33;
+    --gold: #c9a227;
+    --gold-bright: #e3be4a;
+    --positive: #4c9a78;
+    --negative: #b3413e;
+    --text: #ece8df;
+    --text-muted: #8b8f94;
+  }
+  *{ scrollbar-color: var(--line) var(--bg); }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+  .mono{ font-family: 'JetBrains Mono', monospace; }
+  .display{ font-family: 'Fraunces', serif; }
+
+  .navbar-vault{
+    background: linear-gradient(180deg, #101215 0%, #0b0d10 100%);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand-mark{
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .brand-mark span{ color: var(--gold); }
+  .brand-sub{
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .ledger-strip{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .ledger-cell{
+    padding: 1.1rem 1.4rem;
+    border-right: 1px solid var(--line);
+    position: relative;
+  }
+  .ledger-cell:last-child{ border-right: none; }
+  .ledger-label{
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+  }
+  .ledger-value{
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .ledger-value.gold{ color: var(--gold-bright); }
+  .ledger-value.positive{ color: var(--positive); }
+  .ledger-value.negative{ color: var(--negative); }
+  .ledger-sub{
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+
+  .section-heading{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    letter-spacing: 0.01em;
+  }
+  .rule-gold{
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold) 0%, transparent 70%);
+    flex: 1;
+    margin-left: 1rem;
+    opacity: 0.5;
+  }
+
+  .envelope-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.25rem;
+    height: 100%;
+    transition: border-color 0.2s ease;
+  }
+  .envelope-card:hover{ border-color: #3a4046; }
+
+  .gauge{
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .gauge::before{
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: var(--surface);
+  }
+  .gauge-label{
+    position: relative;
+    font-size: 0.72rem;
+    font-weight: 600;
+    z-index: 1;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .envelope-name{
+    font-family: 'Fraunces', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .envelope-meta{
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .progress{
+    background: var(--surface-alt);
+    height: 6px;
+    border-radius: 3px;
+  }
+  .expense-row{
+    font-size: 0.8rem;
+    padding: 0.35rem 0;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-muted);
+  }
+  .expense-row .amt{ color: var(--text); }
+  .btn-gold{
+    background: var(--gold);
+    border: none;
+    color: #16130a;
+    font-weight: 600;
+  }
+  .btn-gold:hover{ background: var(--gold-bright); color: #16130a; }
+  .btn-outline-vault{
+    border: 1px solid var(--line);
+    color: var(--text-muted);
+    background: transparent;
+  }
+  .btn-outline-vault:hover{
+    border-color: var(--gold);
+    color: var(--gold-bright);
+    background: transparent;
+  }
+  .icon-btn{
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 2px 6px;
+    line-height: 1;
+  }
+  .icon-btn:hover{ color: var(--gold-bright); }
+
+  .modal-content{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+  .form-control, .form-select{
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+  .form-control:focus, .form-select:focus{
+    background: var(--surface-alt);
+    color: var(--text);
+    border-color: var(--gold);
+    box-shadow: 0 0 0 0.2rem rgba(201,162,39,0.15);
+  }
+  .form-label{ font-size: 0.82rem; color: var(--text-muted); }
+
+  .empty-state{
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  ::selection{ background: var(--gold); color: #0b0d10; }
+  :focus-visible{ outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+
+  @media (max-width: 767px){
+    .ledger-cell{ border-right: none; border-bottom: 1px solid var(--line); }
+    .ledger-cell:last-child{ border-bottom: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-vault py-3">
+  <div class="container d-flex justify-content-between align-items-center">
+    <div>
+      <div class="brand-mark">VAULT<span>.</span></div>
+      <div class="brand-sub">your money, sectioned</div>
+    </div>
+    <button class="btn btn-sm btn-outline-vault" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Settings">
+      ⚙ Settings
+    </button>
+  </div>
+</nav>
+
+<div class="container py-4">
+
+  <!-- Ledger summary strip -->
+  <div class="ledger-strip d-flex flex-column flex-md-row mb-4">
+    <div class="ledger-cell flex-fill">
+      <div class="ledger-label">Total Earned</div>
+      <div class="ledger-value gold mono" id="statIncome">0.00</div>
+      <div class="ledger-sub"><button class="btn btn-sm btn-gold mt-2" data-bs-toggle="modal" data-bs-target="#incomeModal">+ Add income</button></div>
+    </div>
+    <div class="ledger-cell flex-fill">
+      <div class="ledger-label">Allocated to Sections</div>
+      <div class="ledger-value mono" id="statAllocated">0.00</div>
+      <div class="ledger-sub" id="statUnallocated">unassigned: 0.00</div>
+    </div>
+    <div class="ledger-cell flex-fill">
+      <div class="ledger-label">Spent</div>
+      <div class="ledger-value mono" id="statSpent">0.00</div>
+      <div class="ledger-sub" id="statExpenseCount">0 expenses logged</div>
+    </div>
+    <div class="ledger-cell flex-fill">
+      <div class="ledger-label">Remaining Cash</div>
+      <div class="ledger-value mono" id="statRemaining">0.00</div>
+      <div class="ledger-sub">
+        Earn - Spent
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center mb-3">
+    <div class="section-heading">Your Sections</div>
+    <div class="rule-gold"></div>
+    <button class="btn btn-sm btn-gold ms-3" data-bs-toggle="modal" data-bs-target="#sectionModal" onclick="prepSectionModal()">+ New Section</button>
+  </div>
+
+  <div id="emptyState" class="empty-state d-none">
+    No sections yet.
+  </div>
+
+  <div class="row g-3" id="sectionsGrid"></div>
+
+</div>
+
+<!-- Add Income Modal -->
+<div class="modal fade" id="incomeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title display">Add income</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Amount</label>
+          <input type="number" step="0.01" min="0" class="form-control mono" id="incomeAmount" placeholder="0.00">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Source / note</label>
+          <input type="text" class="form-control" id="incomeNote" placeholder="Salary, Others">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-control" id="incomeDate">
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button class="btn btn-outline-vault" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-gold" onclick="addIncome()">Add income</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Section Modal -->
+<div class="modal fade" id="sectionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title display" id="sectionModalTitle">New section</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="sectionEditId">
+        <div class="mb-3">
+          <label class="form-label">Section name</label>
+          <input type="text" class="form-control" id="sectionName" placeholder="e.g. Groceries, Rent, Fun money">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Budget allocated to this section</label>
+          <input type="number" step="0.01" min="0" class="form-control mono" id="sectionBudget" placeholder="0.00">
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button class="btn btn-outline-vault" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-gold" onclick="saveSection()">Save section</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Expense Modal -->
+<div class="modal fade" id="expenseModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title display">Log an expense</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="expenseSectionId">
+        <div class="mb-3">
+          <label class="form-label">Amount</label>
+          <input type="number" step="0.01" min="0" class="form-control mono" id="expenseAmount" placeholder="0.00">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Note</label>
+          <input type="text" class="form-control" id="expenseNote" placeholder="What was it for?">
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button class="btn btn-outline-vault" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-gold" onclick="addExpense()">Add expense</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title display">Settings</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Currency symbol</label>
+          <input type="text" class="form-control" id="currencySymbol" placeholder="Rs.">
+        </div>
+        <hr class="border-secondary">
+        <div class="mb-2">
+          <label class="form-label">Backup</label>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-vault" onclick="exportData()">Export data (.json)</button>
+            <label class="btn btn-sm btn-outline-vault mb-0">
+              Import data
+              <input type="file" accept=".json" hidden onchange="importData(event)">
+            </label>
+          </div>
+        </div>
+        <hr class="border-secondary">
+        <button class="btn btn-sm btn-outline-danger" onclick="clearAllData()">Clear all data</button>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button class="btn btn-gold" data-bs-dismiss="modal" onclick="saveSettings()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+  const STORAGE_KEY = 'vaultBudgetData';
+  let state = loadState();
+
+  function loadState(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      try{ return JSON.parse(raw); }catch(e){ /* fall through to default */ }
+    }
+    return { income: [], sections: [], expenses: [], currency: 'Rs.' };
+  }
+
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function uid(){
+    return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  }
+
+  function fmt(n){
+    return (Math.round(n * 100) / 100).toFixed(2);
+  }
+
+  function cur(){
+    return state.currency || 'Rs.';
+  }
+
+  // ---------- Computations ----------
+  function totalIncome(){
+    return state.income.reduce((s,i) => s + i.amount, 0);
+  }
+  function totalAllocated(){
+    return state.sections.reduce((s,sec) => s + sec.budget, 0);
+  }
+  function totalSpent(){
+    return state.expenses.reduce((s,e) => s + e.amount, 0);
+  }
+  function sectionSpent(sectionId){
+    return state.expenses.filter(e => e.sectionId === sectionId).reduce((s,e) => s + e.amount, 0);
+  }
+
+  // ---------- Rendering ----------
+  function render(){
+    const inc = totalIncome();
+    const alloc = totalAllocated();
+    const spent = totalSpent();
+    const remaining = inc - spent;
+    const unallocated = inc - alloc;
+
+    document.getElementById('statIncome').textContent = cur() + ' ' + fmt(inc);
+    document.getElementById('statAllocated').textContent = cur() + ' ' + fmt(alloc);
+    document.getElementById('statUnallocated').textContent = 'unassigned: ' + cur() + ' ' + fmt(unallocated);
+    document.getElementById('statSpent').textContent = cur() + ' ' + fmt(spent);
+    document.getElementById('statExpenseCount').textContent = state.expenses.length + ' expense' + (state.expenses.length===1?'':'s') + ' logged';
+
+    const remEl = document.getElementById('statRemaining');
+    remEl.textContent = cur() + ' ' + fmt(remaining);
+    remEl.classList.remove('positive','negative','gold');
+    remEl.classList.add(remaining < 0 ? 'negative' : 'positive');
+
+    const grid = document.getElementById('sectionsGrid');
+    const empty = document.getElementById('emptyState');
+    grid.innerHTML = '';
+
+    if(state.sections.length === 0){
+      empty.classList.remove('d-none');
+    } else {
+      empty.classList.add('d-none');
+      state.sections.forEach(sec => grid.appendChild(renderSectionCard(sec)));
+    }
+
+    saveState();
+  }
+
+  function renderSectionCard(sec){
+    const spent = sectionSpent(sec.id);
+    const remaining = sec.budget - spent;
+    const pct = sec.budget > 0 ? Math.min(100, Math.round((spent/sec.budget)*100)) : 0;
+
+    let ringColor = 'var(--positive)';
+    if(pct >= 100) ringColor = 'var(--negative)';
+    else if(pct >= 75) ringColor = 'var(--gold)';
+
+    const col = document.createElement('div');
+    col.className = 'col-md-6 col-lg-4';
+
+    const sectionExpenses = state.expenses
+      .filter(e => e.sectionId === sec.id)
+      .slice()
+      .reverse()
+      .slice(0,3);
+
+    const expenseRowsHtml = sectionExpenses.length
+      ? sectionExpenses.map(e => `
+        <div class="expense-row">
+          <span>${escapeHtml(e.note || 'Expense')}</span>
+          <span class="d-flex align-items-center gap-2">
+            <span class="amt mono">${cur()} ${fmt(e.amount)}</span>
+            <button class="icon-btn" title="Delete" onclick="deleteExpense('${e.id}')">✕</button>
+          </span>
+        </div>
+      `).join('')
+      : '<div class="expense-row" style="border-top:none;">No expenses yet</div>';
+
+    col.innerHTML = `
+      <div class="envelope-card d-flex flex-column">
+        <div class="d-flex align-items-start justify-content-between mb-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="gauge" style="background: conic-gradient(${ringColor} ${pct*3.6}deg, var(--surface-alt) 0deg);">
+              <span class="gauge-label">${pct}%</span>
+            </div>
+            <div>
+              <div class="envelope-name">${escapeHtml(sec.name)}</div>
+              <div class="envelope-meta mono">${cur()} ${fmt(remaining)} left</div>
+            </div>
+          </div>
+          <div>
+            <button class="icon-btn" title="Edit section" onclick="editSection('${sec.id}')">✎</button>
+            <button class="icon-btn" title="Delete section" onclick="deleteSection('${sec.id}')">🗑</button>
+          </div>
+        </div>
+        <div class="progress mb-2">
+          <div class="progress-bar" role="progressbar" style="width:${pct}%; background:${ringColor};"></div>
+        </div>
+        <div class="d-flex justify-content-between envelope-meta mono mb-3">
+          <span>Spent ${cur()} ${fmt(spent)}</span>
+          <span>Budget ${cur()} ${fmt(sec.budget)}</span>
+        </div>
+        <button class="btn btn-sm btn-outline-vault mb-3" onclick="openExpenseModal('${sec.id}')">+ Log expense</button>
+        <div class="mt-auto">${expenseRowsHtml}</div>
+      </div>
+    `;
+    return col;
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ---------- Income ----------
+  function addIncome(){
+    const amount = parseFloat(document.getElementById('incomeAmount').value);
+    const note = document.getElementById('incomeNote').value.trim();
+    const date = document.getElementById('incomeDate').value || new Date().toISOString().slice(0,10);
+    if(!amount || amount <= 0){ alert('Enter a valid amount.'); return; }
+
+    state.income.push({ id: uid(), amount, note, date });
+    document.getElementById('incomeAmount').value = '';
+    document.getElementById('incomeNote').value = '';
+    bootstrap.Modal.getInstance(document.getElementById('incomeModal')).hide();
+    render();
+  }
+
+  // ---------- Sections ----------
+  function prepSectionModal(){
+    document.getElementById('sectionModalTitle').textContent = 'New section';
+    document.getElementById('sectionEditId').value = '';
+    document.getElementById('sectionName').value = '';
+    document.getElementById('sectionBudget').value = '';
+  }
+
+  function editSection(id){
+    const sec = state.sections.find(s => s.id === id);
+    if(!sec) return;
+    document.getElementById('sectionModalTitle').textContent = 'Edit section';
+    document.getElementById('sectionEditId').value = sec.id;
+    document.getElementById('sectionName').value = sec.name;
+    document.getElementById('sectionBudget').value = sec.budget;
+    new bootstrap.Modal(document.getElementById('sectionModal')).show();
+  }
+
+  function saveSection(){
+    const name = document.getElementById('sectionName').value.trim();
+    const budget = parseFloat(document.getElementById('sectionBudget').value) || 0;
+    const editId = document.getElementById('sectionEditId').value;
+    if(!name){ alert('Give this section a name.'); return; }
+
+    if(editId){
+      const sec = state.sections.find(s => s.id === editId);
+      sec.name = name;
+      sec.budget = budget;
+    } else {
+      state.sections.push({ id: uid(), name, budget });
+    }
+    bootstrap.Modal.getInstance(document.getElementById('sectionModal')).hide();
+    render();
+  }
+
+  function deleteSection(id){
+    if(!confirm('Delete this section? Its logged expenses will be deleted too.')) return;
+    state.sections = state.sections.filter(s => s.id !== id);
+    state.expenses = state.expenses.filter(e => e.sectionId !== id);
+    render();
+  }
+
+  // ---------- Expenses ----------
+  function openExpenseModal(sectionId){
+    document.getElementById('expenseSectionId').value = sectionId;
+    document.getElementById('expenseAmount').value = '';
+    document.getElementById('expenseNote').value = '';
+    new bootstrap.Modal(document.getElementById('expenseModal')).show();
+  }
+
+  function addExpense(){
+    const sectionId = document.getElementById('expenseSectionId').value;
+    const amount = parseFloat(document.getElementById('expenseAmount').value);
+    const note = document.getElementById('expenseNote').value.trim();
+    if(!amount || amount <= 0){ alert('Enter a valid amount.'); return; }
+
+    state.expenses.push({ id: uid(), sectionId, amount, note, date: new Date().toISOString().slice(0,10) });
+    bootstrap.Modal.getInstance(document.getElementById('expenseModal')).hide();
+    render();
+  }
+
+  function deleteExpense(id){
+    state.expenses = state.expenses.filter(e => e.id !== id);
+    render();
+  }
+
+  // ---------- Settings ----------
+  function saveSettings(){
+    const symbol = document.getElementById('currencySymbol').value.trim();
+    state.currency = symbol || 'Rs.';
+    render();
+  }
+
+  function exportData(){
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'vault-budget-backup.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(event){
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try{
+        const parsed = JSON.parse(e.target.result);
+        if(!parsed.sections || !parsed.income || !parsed.expenses){
+          alert('This file doesn\'t look like a valid Vault backup.');
+          return;
+        }
+        state = parsed;
+        document.getElementById('currencySymbol').value = state.currency || 'Rs.';
+        render();
+        alert('Data imported.');
+      } catch(err){
+        alert('Could not read that file.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function clearAllData(){
+    if(!confirm('This will permanently delete all income, sections, and expenses. Continue?')) return;
+    state = { income: [], sections: [], expenses: [], currency: state.currency };
+    render();
+  }
+
+  // ---------- Init ----------
+  document.getElementById('incomeDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('currencySymbol').value = cur();
+  render();
+</script>
+</body>
+</html>
